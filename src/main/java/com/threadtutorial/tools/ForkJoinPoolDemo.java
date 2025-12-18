@@ -1,5 +1,7 @@
 package com.threadtutorial.tools;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.RecursiveAction;
@@ -15,27 +17,28 @@ import java.util.stream.Collectors;
  * ForkJoinPool分治线程池示例
  * 演示Java 7+的Fork/Join框架，适用于分治算法和并行计算
  */
+@Slf4j
 public class ForkJoinPoolDemo {
 
     public static void main(String[] args) throws Exception {
-        System.out.println("=== ForkJoinPool分治线程池示例 ===");
+        log.info("=== ForkJoinPool分治线程池示例 ===");
         
-        System.out.println("\n1. 计算斐波那契数列 (RecursiveTask):");
+        log.info("\n1. 计算斐波那契数列 (RecursiveTask):");
         fibonacciExample();
         
-        System.out.println("\n2. 数组求和 (RecursiveTask):");
+        log.info("\n2. 数组求和 (RecursiveTask):");
         arraySumExample();
         
-        System.out.println("\n3. 数组排序 (RecursiveAction):");
+        log.info("\n3. 数组排序 (RecursiveAction):");
         arraySortExample();
         
-        System.out.println("\n4. 文件搜索 (RecursiveTask):");
+        log.info("\n4. 文件搜索 (RecursiveTask):");
         fileSearchExample();
         
-        System.out.println("\n5. 并行流与ForkJoinPool:");
+        log.info("\n5. 并行流与ForkJoinPool:");
         parallelStreamExample();
         
-        System.out.println("\n6. 自定义ForkJoinPool配置:");
+        log.info("\n6. 自定义ForkJoinPool配置:");
         customForkJoinPoolExample();
     }
     
@@ -56,9 +59,9 @@ public class ForkJoinPoolDemo {
         long result = pool.invoke(task);
         long endTime = System.currentTimeMillis();
         
-        System.out.println("斐波那契数列第 " + n + " 项: " + result);
-        System.out.println("计算耗时: " + (endTime - startTime) + "ms");
-        System.out.println("ForkJoinPool状态: " + pool);
+        log.info("斐波那契数列第  {}", n + " 项: " + result);
+        log.info("计算耗时:  {}", (endTime - startTime) + "ms");
+        log.info("ForkJoinPool状态:  {}", pool);
         
         // 关闭线程池
         pool.shutdown();
@@ -83,9 +86,9 @@ public class ForkJoinPoolDemo {
         long sum = pool.invoke(task);
         long endTime = System.currentTimeMillis();
         
-        System.out.println("数组大小: " + array.length);
-        System.out.println("数组总和: " + sum);
-        System.out.println("并行计算耗时: " + (endTime - startTime) + "ms");
+        log.info("数组大小:  {}", array.length);
+        log.info("数组总和:  {}", sum);
+        log.info("并行计算耗时:  {}", (endTime - startTime) + "ms");
         
         // 验证结果（使用串行计算）
         long serialSum = 0;
@@ -95,9 +98,9 @@ public class ForkJoinPoolDemo {
         }
         endTime = System.currentTimeMillis();
         
-        System.out.println("串行计算总和: " + serialSum);
-        System.out.println("串行计算耗时: " + (endTime - startTime) + "ms");
-        System.out.println("结果验证: " + (sum == serialSum ? "正确" : "错误"));
+        log.info("串行计算总和:  {}", serialSum);
+        log.info("串行计算耗时:  {}", (endTime - startTime) + "ms");
+        log.info("结果验证:  {}", (sum == serialSum ? "正确" : "错误"));
         
         pool.shutdown();
     }
@@ -124,8 +127,8 @@ public class ForkJoinPoolDemo {
         pool.invoke(task);
         long endTime = System.currentTimeMillis();
         
-        System.out.println("数组大小: " + array.length);
-        System.out.println("并行排序耗时: " + (endTime - startTime) + "ms");
+        log.info("数组大小:  {}", array.length);
+        log.info("并行排序耗时:  {}", (endTime - startTime) + "ms");
         
         // 验证排序结果
         boolean sorted = true;
@@ -135,13 +138,13 @@ public class ForkJoinPoolDemo {
                 break;
             }
         }
-        System.out.println("排序验证: " + (sorted ? "成功" : "失败"));
+        log.info("排序验证:  {}", (sorted ? "成功" : "失败"));
         
         // 串行排序对比
         startTime = System.currentTimeMillis();
         Arrays.sort(arrayCopy);
         endTime = System.currentTimeMillis();
-        System.out.println("串行排序耗时: " + (endTime - startTime) + "ms");
+        log.info("串行排序耗时:  {}", (endTime - startTime) + "ms");
         
         pool.shutdown();
     }
@@ -172,14 +175,14 @@ public class ForkJoinPoolDemo {
         List<String> results = pool.invoke(task);
         long endTime = System.currentTimeMillis();
         
-        System.out.println("搜索模式: *" + searchPattern);
-        System.out.println("文件总数: " + fileSystem.size());
-        System.out.println("找到文件数: " + results.size());
-        System.out.println("搜索耗时: " + (endTime - startTime) + "ms");
+        log.info("搜索模式: * {}", searchPattern);
+        log.info("文件总数:  {}", fileSystem.size());
+        log.info("找到文件数:  {}", results.size());
+        log.info("搜索耗时:  {}", (endTime - startTime) + "ms");
         
         if (!results.isEmpty()) {
-            System.out.println("找到的文件:");
-            results.forEach(file -> System.out.println("  - " + file));
+            log.info("找到的文件:");
+            results.forEach(file -> log.info("  -  {}", file));
         }
         
         pool.shutdown();
@@ -189,7 +192,7 @@ public class ForkJoinPoolDemo {
      * 并行流示例
      */
     private static void parallelStreamExample() {
-        System.out.println("演示并行流如何使用ForkJoinPool:");
+        log.info("演示并行流如何使用ForkJoinPool:");
         
         // 创建一个大列表
         List<Integer> numbers = new ArrayList<>();
@@ -204,12 +207,12 @@ public class ForkJoinPoolDemo {
                          .sum();
         long endTime = System.currentTimeMillis();
         
-        System.out.println("列表大小: " + numbers.size());
-        System.out.println("总和: " + sum);
-        System.out.println("并行流计算耗时: " + (endTime - startTime) + "ms");
+        log.info("列表大小:  {}", numbers.size());
+        log.info("总和:  {}", sum);
+        log.info("并行流计算耗时:  {}", (endTime - startTime) + "ms");
         
         // 使用自定义ForkJoinPool
-        System.out.println("\n使用自定义ForkJoinPool执行并行流:");
+        log.info("\n使用自定义ForkJoinPool执行并行流:");
         ForkJoinPool customPool = new ForkJoinPool(4); // 4个线程
         
         startTime = System.currentTimeMillis();
@@ -220,8 +223,8 @@ public class ForkJoinPoolDemo {
         ).join();
         endTime = System.currentTimeMillis();
         
-        System.out.println("自定义线程池计算总和: " + customSum);
-        System.out.println("自定义线程池计算耗时: " + (endTime - startTime) + "ms");
+        log.info("自定义线程池计算总和:  {}", customSum);
+        log.info("自定义线程池计算耗时:  {}", (endTime - startTime) + "ms");
         
         customPool.shutdown();
     }
@@ -230,7 +233,7 @@ public class ForkJoinPoolDemo {
      * 自定义ForkJoinPool配置示例
      */
     private static void customForkJoinPoolExample() throws InterruptedException {
-        System.out.println("自定义ForkJoinPool配置:");
+        log.info("自定义ForkJoinPool配置:");
         
         // 创建自定义配置的ForkJoinPool
         ForkJoinPool customPool = new ForkJoinPool(
@@ -240,18 +243,18 @@ public class ForkJoinPoolDemo {
             true // 异步模式
         );
         
-        System.out.println("自定义线程池配置:");
-        System.out.println("并行级别: " + customPool.getParallelism());
-        System.out.println("线程池大小: " + customPool.getPoolSize());
-        System.out.println("活跃线程数: " + customPool.getActiveThreadCount());
-        System.out.println("窃取任务数: " + customPool.getStealCount());
+        log.info("自定义线程池配置:");
+        log.info("并行级别:  {}", customPool.getParallelism());
+        log.info("线程池大小:  {}", customPool.getPoolSize());
+        log.info("活跃线程数:  {}", customPool.getActiveThreadCount());
+        log.info("窃取任务数:  {}", customPool.getStealCount());
         
         // 提交多个任务
         List<ForkJoinTask<Long>> tasks = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             final int taskId = i;
             ForkJoinTask<Long> task = customPool.submit(() -> {
-                System.out.println("任务 " + taskId + " 由线程 " + Thread.currentThread().getName() + " 执行");
+                log.info("任务  {}", taskId + " 由线程 " + Thread.currentThread().getName() + " 执行");
                 long result = 0;
                 for (int j = 0; j < 1000000; j++) {
                     result += j;
@@ -265,22 +268,22 @@ public class ForkJoinPoolDemo {
         for (int i = 0; i < tasks.size(); i++) {
             try {
                 Long result = tasks.get(i).get();
-                System.out.println("任务 " + i + " 结果: " + result);
+                log.info("任务  {}", i + " 结果: " + result);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("异常", e);
             }
         }
         
-        System.out.println("\n最终线程池状态:");
-        System.out.println("线程池大小: " + customPool.getPoolSize());
-        System.out.println("活跃线程数: " + customPool.getActiveThreadCount());
-        System.out.println("窃取任务数: " + customPool.getStealCount());
-        System.out.println("队列任务数: " + customPool.getQueuedTaskCount());
+        log.info("\n最终线程池状态:");
+        log.info("线程池大小:  {}", customPool.getPoolSize());
+        log.info("活跃线程数:  {}", customPool.getActiveThreadCount());
+        log.info("窃取任务数:  {}", customPool.getStealCount());
+        log.info("队列任务数:  {}", customPool.getQueuedTaskCount());
         
         // 优雅关闭
         customPool.shutdown();
         customPool.awaitTermination(5, TimeUnit.SECONDS);
-        System.out.println("自定义ForkJoinPool示例完成");
+        log.info("自定义ForkJoinPool示例完成");
     }
     
     /**

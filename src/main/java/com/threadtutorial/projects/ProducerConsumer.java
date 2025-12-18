@@ -1,5 +1,7 @@
 package com.threadtutorial.projects;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -10,24 +12,25 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 生产者消费者模式示例
  * 演示多线程环境下的生产者消费者模式实现
  */
+@Slf4j
 public class ProducerConsumer {
     
     public static void main(String[] args) throws InterruptedException {
-        System.out.println("=== 生产者消费者模式示例 ===");
+        log.info("=== 生产者消费者模式示例 ===");
         
         // 示例1：使用BlockingQueue实现
-        System.out.println("\n1. 使用BlockingQueue实现:");
+        log.info("\n1. 使用BlockingQueue实现:");
         testBlockingQueueImplementation();
         
         // 示例2：自定义缓冲区实现
-        System.out.println("\n2. 自定义缓冲区实现:");
+        log.info("\n2. 自定义缓冲区实现:");
         testCustomBufferImplementation();
         
         // 示例3：多生产者和多消费者
-        System.out.println("\n3. 多生产者和多消费者:");
+        log.info("\n3. 多生产者和多消费者:");
         testMultipleProducersConsumers();
         
-        System.out.println("\n所有示例执行完成！");
+        log.info("\n所有示例执行完成！");
     }
     
     /**
@@ -44,16 +47,16 @@ public class ProducerConsumer {
             try {
                 for (int i = 1; i <= 10; i++) {
                     // 生产物品
-                    System.out.println("生产者生产: " + i);
+                    log.info("生产者生产:  {}", i);
                     queue.put(i); // 如果队列满，会阻塞等待
                     producedCount.incrementAndGet();
                     Thread.sleep(200); // 模拟生产时间
                 }
                 // 生产结束信号
                 queue.put(-1);
-                System.out.println("生产者完成生产");
+                log.info("生产者完成生产");
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error("异常", e);
             }
         }, "Producer");
         
@@ -68,13 +71,13 @@ public class ProducerConsumer {
                         queue.put(-1);
                         break;
                     }
-                    System.out.println("消费者消费: " + item);
+                    log.info("消费者消费:  {}", item);
                     consumedCount.incrementAndGet();
                     Thread.sleep(300); // 模拟消费时间
                 }
-                System.out.println("消费者完成消费");
+                log.info("消费者完成消费");
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error("异常", e);
             }
         }, "Consumer");
         
@@ -86,7 +89,7 @@ public class ProducerConsumer {
         producer.join();
         consumer.join();
         
-        System.out.println("生产总数: " + producedCount.get() + ", 消费总数: " + consumedCount.get());
+        log.info("生产总数:  {}", producedCount.get() + ", 消费总数: " + consumedCount.get());
     }
     
     /**
@@ -101,13 +104,13 @@ public class ProducerConsumer {
             try {
                 for (int i = 1; i <= 8; i++) {
                     buffer.produce(i);
-                    System.out.println("自定义生产者生产: " + i);
+                    log.info("自定义生产者生产:  {}", i);
                     Thread.sleep(150);
                 }
                 buffer.produce(-1); // 结束信号
-                System.out.println("自定义生产者完成");
+                log.info("自定义生产者完成");
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error("异常", e);
             }
         }, "CustomProducer");
         
@@ -120,12 +123,12 @@ public class ProducerConsumer {
                         buffer.produce(-1); // 将结束信号放回缓冲区
                         break;
                     }
-                    System.out.println("自定义消费者消费: " + item);
+                    log.info("自定义消费者消费:  {}", item);
                     Thread.sleep(250);
                 }
-                System.out.println("自定义消费者完成");
+                log.info("自定义消费者完成");
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error("异常", e);
             }
         }, "CustomConsumer");
         
@@ -151,8 +154,8 @@ public class ProducerConsumer {
         AtomicInteger totalProduced = new AtomicInteger(0);
         AtomicInteger totalConsumed = new AtomicInteger(0);
         
-        System.out.println("启动 " + producerCount + " 个生产者和 " + consumerCount + " 个消费者");
-        System.out.println("每个生产者生产 " + itemsPerProducer + " 个物品");
+        log.info("启动  {}", producerCount + " 个生产者和 " + consumerCount + " 个消费者");
+        log.info("每个生产者生产  {}", itemsPerProducer + " 个物品");
         
         // 创建生产者线程
         Thread[] producers = new Thread[producerCount];
@@ -164,12 +167,12 @@ public class ProducerConsumer {
                         String item = "P" + producerId + "-Item" + j;
                         queue.put(item);
                         totalProduced.incrementAndGet();
-                        System.out.println("生产者 " + producerId + " 生产: " + item);
+                        log.info("生产者  {}", producerId + " 生产: " + item);
                         Thread.sleep((long) (Math.random() * 300));
                     }
-                    System.out.println("生产者 " + producerId + " 完成");
+                    log.info("生产者  {}", producerId + " 完成");
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    log.error("异常", e);
                 }
             }, "Producer-" + producerId);
         }
@@ -185,12 +188,12 @@ public class ProducerConsumer {
                         String item = queue.take();
                         totalConsumed.incrementAndGet();
                         consumed++;
-                        System.out.println("消费者 " + consumerId + " 消费: " + item);
+                        log.info("消费者  {}", consumerId + " 消费: " + item);
                         Thread.sleep((long) (Math.random() * 400));
                     }
-                    System.out.println("消费者 " + consumerId + " 完成，消费了 " + consumed + " 个物品");
+                    log.info("消费者  {}", consumerId + " 完成，消费了 " + consumed + " 个物品");
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    log.error("异常", e);
                 }
             }, "Consumer-" + consumerId);
         }
@@ -218,7 +221,7 @@ public class ProducerConsumer {
             consumer.join();
         }
         
-        System.out.println("总计生产: " + totalProduced.get() + ", 总计消费: " + totalConsumed.get());
+        log.info("总计生产:  {}", totalProduced.get() + ", 总计消费: " + totalConsumed.get());
     }
     
     /**
@@ -237,7 +240,7 @@ public class ProducerConsumer {
         public synchronized void produce(int item) throws InterruptedException {
             while (count == buffer.length) {
                 // 缓冲区满，等待
-                System.out.println("缓冲区满，生产者等待...");
+                log.info("缓冲区满，生产者等待...");
                 wait();
             }
             
@@ -245,7 +248,7 @@ public class ProducerConsumer {
             putIndex = (putIndex + 1) % buffer.length;
             count++;
             
-            System.out.println("生产后缓冲区大小: " + count + "/" + buffer.length);
+            log.info("生产后缓冲区大小:  {}", count + "/" + buffer.length);
             
             // 通知消费者
             notifyAll();
@@ -254,7 +257,7 @@ public class ProducerConsumer {
         public synchronized int consume() throws InterruptedException {
             while (count == 0) {
                 // 缓冲区空，等待
-                System.out.println("缓冲区空，消费者等待...");
+                log.info("缓冲区空，消费者等待...");
                 wait();
             }
             
@@ -262,7 +265,7 @@ public class ProducerConsumer {
             takeIndex = (takeIndex + 1) % buffer.length;
             count--;
             
-            System.out.println("消费后缓冲区大小: " + count + "/" + buffer.length);
+            log.info("消费后缓冲区大小:  {}", count + "/" + buffer.length);
             
             // 通知生产者
             notifyAll();
@@ -306,7 +309,7 @@ public class ProducerConsumer {
                             break;
                         }
                     }
-                    System.out.println("日志处理器 " + processorId + " 停止");
+                    log.info("日志处理器  {}", processorId + " 停止");
                 }, "LogProcessor-" + processorId);
             }
         }
@@ -315,7 +318,7 @@ public class ProducerConsumer {
             for (Thread processor : processors) {
                 processor.start();
             }
-            System.out.println("日志处理系统启动，有 " + processors.length + " 个处理器");
+            log.info("日志处理系统启动，有  {}", processors.length + " 个处理器");
         }
         
         public void stop() {
@@ -325,13 +328,13 @@ public class ProducerConsumer {
             }
         }
         
-        public void submitLog(String log) throws InterruptedException {
-            logQueue.put(log);
+        public void submitLog(String logMessage) throws InterruptedException {
+            logQueue.put(logMessage);
         }
         
-        private void processLog(int processorId, String log) {
+        private void processLog(int processorId, String logMessage) {
             // 模拟日志处理
-            System.out.println("处理器 " + processorId + " 处理日志: " + log);
+            log.info("处理器 {} 处理日志: {}", processorId, logMessage);
             try {
                 Thread.sleep((long) (Math.random() * 200));
             } catch (InterruptedException e) {

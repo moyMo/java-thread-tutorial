@@ -1,22 +1,25 @@
 package com.threadtutorial.basics;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * 线程通信示例
  * 演示线程间的通信机制：wait(), notify(), notifyAll()
  * 以及使用BlockingQueue进行线程通信
  */
+@Slf4j
 public class ThreadCommunication {
 
     public static void main(String[] args) throws InterruptedException {
-        System.out.println("=== Java线程通信示例 ===");
+        log.info("=== Java线程通信示例 ===");
         
-        System.out.println("\n1. 使用wait()和notify()进行线程通信:");
+        log.info("\n1. 使用wait()和notify()进行线程通信:");
         waitNotifyExample();
         
-        System.out.println("\n2. 生产者-消费者模式示例:");
+        log.info("\n2. 生产者-消费者模式示例:");
         producerConsumerExample();
         
-        System.out.println("\n3. 使用notifyAll()唤醒所有等待线程:");
+        log.info("\n3. 使用notifyAll()唤醒所有等待线程:");
         notifyAllExample();
     }
     
@@ -29,13 +32,13 @@ public class ThreadCommunication {
         // 等待线程
         Thread waiter = new Thread(() -> {
             synchronized (message) {
-                System.out.println("等待线程: 等待消息...");
+                log.info("等待线程: 等待消息...");
                 try {
                     message.wait(); // 释放锁并等待
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    log.error("等待线程被中断", e);
                 }
-                System.out.println("等待线程: 收到消息: " + message.getContent());
+                log.info("等待线程: 收到消息: {}", message.getContent());
             }
         }, "Waiter-Thread");
         
@@ -45,10 +48,10 @@ public class ThreadCommunication {
                 try {
                     Thread.sleep(1000); // 模拟准备工作
                     message.setContent("Hello from Notifier!");
-                    System.out.println("通知线程: 设置消息并通知等待线程");
+                    log.info("通知线程: 设置消息并通知等待线程");
                     message.notify(); // 唤醒一个等待线程
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    log.error("通知线程被中断", e);
                 }
             }
         }, "Notifier-Thread");
@@ -74,10 +77,10 @@ public class ThreadCommunication {
                     buffer.produce("产品-" + i);
                     Thread.sleep(300); // 模拟生产时间
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    log.error("生产者线程被中断", e);
                 }
             }
-            System.out.println("生产者: 生产完成");
+            log.info("生产者: 生产完成");
         }, "Producer-Thread");
         
         // 消费者线程
@@ -87,10 +90,10 @@ public class ThreadCommunication {
                     String product = buffer.consume();
                     Thread.sleep(500); // 模拟消费时间
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    log.error("消费者线程被中断", e);
                 }
             }
-            System.out.println("消费者: 消费完成");
+            log.info("消费者: 消费完成");
         }, "Consumer-Thread");
         
         producer.start();
@@ -111,12 +114,12 @@ public class ThreadCommunication {
             final int threadId = i;
             Thread waiter = new Thread(() -> {
                 synchronized (lock) {
-                    System.out.println("等待线程-" + threadId + ": 开始等待");
+                    log.info("等待线程-{}: 开始等待", threadId);
                     try {
                         lock.wait();
-                        System.out.println("等待线程-" + threadId + ": 被唤醒");
+                        log.info("等待线程-{}: 被唤醒", threadId);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        log.error("等待线程-{}被中断", threadId, e);
                     }
                 }
             }, "Waiter-" + threadId);
@@ -128,11 +131,11 @@ public class ThreadCommunication {
             try {
                 Thread.sleep(1000); // 让所有等待线程都进入等待状态
                 synchronized (lock) {
-                    System.out.println("\n通知线程: 调用notifyAll()唤醒所有等待线程");
+                    log.info("\n通知线程: 调用notifyAll()唤醒所有等待线程");
                     lock.notifyAll(); // 唤醒所有等待线程
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error("通知线程被中断", e);
             }
         }, "Notifier-Thread");
         
@@ -160,6 +163,7 @@ public class ThreadCommunication {
     /**
      * 共享缓冲区类
      */
+    @Slf4j
     static class SharedBuffer {
         private final String[] buffer;
         private int count = 0;
@@ -172,28 +176,28 @@ public class ThreadCommunication {
         
         public synchronized void produce(String product) throws InterruptedException {
             while (count == buffer.length) {
-                System.out.println("缓冲区已满，生产者等待...");
+                log.info("缓冲区已满，生产者等待...");
                 wait(); // 缓冲区满，等待
             }
             
             buffer[putIndex] = product;
             putIndex = (putIndex + 1) % buffer.length;
             count++;
-            System.out.println("生产者生产: " + product + " (缓冲区大小: " + count + "/" + buffer.length + ")");
+            log.info("生产者生产: {} (缓冲区大小: {}/{})", product, count, buffer.length);
             
             notifyAll(); // 通知消费者可以消费了
         }
         
         public synchronized String consume() throws InterruptedException {
             while (count == 0) {
-                System.out.println("缓冲区为空，消费者等待...");
+                log.info("缓冲区为空，消费者等待...");
                 wait(); // 缓冲区空，等待
             }
             
             String product = buffer[takeIndex];
             takeIndex = (takeIndex + 1) % buffer.length;
             count--;
-            System.out.println("消费者消费: " + product + " (缓冲区大小: " + count + "/" + buffer.length + ")");
+            log.info("消费者消费: {} (缓冲区大小: {}/{})", product, count, buffer.length);
             
             notifyAll(); // 通知生产者可以生产了
             return product;

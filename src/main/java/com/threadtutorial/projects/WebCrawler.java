@@ -1,5 +1,7 @@
 package com.threadtutorial.projects;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.concurrent.*;
 import java.util.*;
 import java.net.*;
@@ -10,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 多线程网络爬虫示例
  * 演示使用线程池和并发集合实现网页爬虫
  */
+@Slf4j
 public class WebCrawler {
 
     // 已访问的URL集合（线程安全）
@@ -48,15 +51,15 @@ public class WebCrawler {
      */
     public void start(String startUrl) {
         if (crawling) {
-            System.out.println("爬虫已经在运行中");
+            log.info("爬虫已经在运行中");
             return;
         }
         
         crawling = true;
-        System.out.println("=== 启动网络爬虫 ===");
-        System.out.println("起始URL: " + startUrl);
-        System.out.println("最大页面数: " + maxPages);
-        System.out.println("线程数: " + ((ThreadPoolExecutor) executorService).getMaximumPoolSize());
+        log.info("=== 启动网络爬虫 ===");
+        log.info("起始URL:  {}", startUrl);
+        log.info("最大页面数:  {}", maxPages);
+        log.info("线程数:  {}", ((ThreadPoolExecutor) executorService).getMaximumPoolSize());
         
         // 添加起始URL到队列
         urlQueue.add(startUrl);
@@ -93,7 +96,7 @@ public class WebCrawler {
         
         @Override
         public void run() {
-            System.out.println(workerName + " 开始工作");
+            log.info("{}  开始工作", workerName );
             
             while (crawling && totalPages.get() < maxPages) {
                 try {
@@ -117,7 +120,7 @@ public class WebCrawler {
                     totalPages.incrementAndGet();
                     
                     // 爬取页面
-                    System.out.println(workerName + " 爬取: " + url);
+                    log.info("{} 爬取: {}", workerName, url);
                     String content = fetchPage(url);
                     
                     if (content != null) {
@@ -146,7 +149,7 @@ public class WebCrawler {
                 }
             }
             
-            System.out.println(workerName + " 结束工作");
+            log.info("{}  结束工作", workerName );
         }
         
         /**
@@ -190,19 +193,19 @@ public class WebCrawler {
     private class Monitor implements Runnable {
         @Override
         public void run() {
-            System.out.println("监控线程启动");
+            log.info("监控线程启动");
             
             while (crawling && totalPages.get() < maxPages) {
                 try {
                     Thread.sleep(2000); // 每2秒报告一次
                     
-                    System.out.println("\n=== 爬虫状态报告 ===");
-                    System.out.println("已访问页面: " + visitedUrls.size() + "/" + maxPages);
-                    System.out.println("队列大小: " + urlQueue.size());
-                    System.out.println("成功爬取: " + successfulFetches.get());
-                    System.out.println("失败爬取: " + failedFetches.get());
-                    System.out.println("活跃线程: " + ((ThreadPoolExecutor) executorService).getActiveCount());
-                    System.out.println("===================\n");
+                    log.info("\n=== 爬虫状态报告 ===");
+                    log.info("已访问页面:  {}", visitedUrls.size() + "/" + maxPages);
+                    log.info("队列大小:  {}", urlQueue.size());
+                    log.info("成功爬取:  {}", successfulFetches.get());
+                    log.info("失败爬取:  {}", failedFetches.get());
+                    log.info("活跃线程:  {}", ((ThreadPoolExecutor) executorService).getActiveCount());
+                    log.info("===================\n");
                     
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -210,7 +213,7 @@ public class WebCrawler {
                 }
             }
             
-            System.out.println("监控线程结束");
+            log.info("监控线程结束");
         }
     }
     
@@ -218,22 +221,21 @@ public class WebCrawler {
      * 打印统计信息
      */
     private void printStatistics() {
-        System.out.println("\n=== 爬虫统计信息 ===");
-        System.out.println("总页面数: " + totalPages.get());
-        System.out.println("成功爬取: " + successfulFetches.get());
-        System.out.println("失败爬取: " + failedFetches.get());
-        System.out.println("成功率: " + 
-            (totalPages.get() > 0 ? 
+        log.info("\n=== 爬虫统计信息 ===");
+        log.info("总页面数:  {}", totalPages.get());
+        log.info("成功爬取:  {}", successfulFetches.get());
+        log.info("失败爬取:  {}", failedFetches.get());
+        log.info("成功率:  {}", (totalPages.get() > 0 ? 
              (successfulFetches.get() * 100.0 / totalPages.get()) : 0) + "%");
-        System.out.println("已访问URL示例:");
+        log.info("已访问URL示例:");
         
         int count = 0;
         for (String url : visitedUrls) {
             if (count++ >= 5) break;
-            System.out.println("  - " + url);
+            log.info("  -  {}", url);
         }
         if (visitedUrls.size() > 5) {
-            System.out.println("  ... 还有 " + (visitedUrls.size() - 5) + " 个URL");
+            log.info("  ... 还有  {}", (visitedUrls.size() - 5) + " 个URL");
         }
     }
     
@@ -243,14 +245,14 @@ public class WebCrawler {
     public void stop() {
         crawling = false;
         executorService.shutdownNow();
-        System.out.println("爬虫已停止");
+        log.info("爬虫已停止");
     }
     
     /**
      * 主方法 - 演示使用
      */
     public static void main(String[] args) {
-        System.out.println("=== 多线程网络爬虫示例 ===");
+        log.info("=== 多线程网络爬虫示例 ===");
         
         // 创建爬虫实例
         WebCrawler crawler = new WebCrawler(20, 4);
@@ -258,58 +260,58 @@ public class WebCrawler {
         // 启动爬虫
         crawler.start("http://example.com");
         
-        System.out.println("\n=== 爬虫技术要点 ===");
-        System.out.println("1. 线程池管理: 使用固定大小线程池控制并发度");
-        System.out.println("2. 并发集合: 使用ConcurrentHashMap和BlockingQueue保证线程安全");
-        System.out.println("3. 流量控制: 限制最大爬取页面数，防止无限爬取");
-        System.out.println("4. 状态监控: 独立监控线程报告爬虫状态");
-        System.out.println("5. 错误处理: 统计成功/失败次数，提高健壮性");
-        System.out.println("6. 资源管理: 合理关闭线程池，防止资源泄漏");
+        log.info("\n=== 爬虫技术要点 ===");
+        log.info("1. 线程池管理: 使用固定大小线程池控制并发度");
+        log.info("2. 并发集合: 使用ConcurrentHashMap和BlockingQueue保证线程安全");
+        log.info("3. 流量控制: 限制最大爬取页面数，防止无限爬取");
+        log.info("4. 状态监控: 独立监控线程报告爬虫状态");
+        log.info("5. 错误处理: 统计成功/失败次数，提高健壮性");
+        log.info("6. 资源管理: 合理关闭线程池，防止资源泄漏");
         
-        System.out.println("\n=== 扩展建议 ===");
-        System.out.println("1. 添加URL去重策略（布隆过滤器）");
-        System.out.println("2. 实现真实的HTTP请求和HTML解析");
-        System.out.println("3. 添加 robots.txt 遵守规则");
-        System.out.println("4. 实现深度优先或广度优先搜索策略");
-        System.out.println("5. 添加持久化存储（数据库或文件）");
-        System.out.println("6. 实现分布式爬虫架构");
+        log.info("\n=== 扩展建议 ===");
+        log.info("1. 添加URL去重策略（布隆过滤器）");
+        log.info("2. 实现真实的HTTP请求和HTML解析");
+        log.info("3. 添加 robots.txt 遵守规则");
+        log.info("4. 实现深度优先或广度优先搜索策略");
+        log.info("5. 添加持久化存储（数据库或文件）");
+        log.info("6. 实现分布式爬虫架构");
     }
     
     /**
      * 高级特性演示
      */
     public static void advancedDemo() {
-        System.out.println("\n=== 高级特性演示 ===");
+        log.info("\n=== 高级特性演示 ===");
         
         // 演示不同的线程池配置
-        System.out.println("1. 不同线程池配置对比:");
+        log.info("1. 不同线程池配置对比:");
         
         // 小线程池
         WebCrawler smallPoolCrawler = new WebCrawler(10, 2);
-        System.out.println("小线程池(2线程) - 适合低并发场景");
+        log.info("小线程池(2线程) - 适合低并发场景");
         
         // 大线程池
         WebCrawler largePoolCrawler = new WebCrawler(10, 8);
-        System.out.println("大线程池(8线程) - 适合高并发场景");
+        log.info("大线程池(8线程) - 适合高并发场景");
         
         // 演示不同的队列策略
-        System.out.println("\n2. 不同队列策略:");
-        System.out.println("LinkedBlockingQueue - 无界队列，适合生产快消费慢的场景");
-        System.out.println("ArrayBlockingQueue - 有界队列，防止内存溢出");
-        System.out.println("PriorityBlockingQueue - 优先级队列，按重要性爬取");
+        log.info("\n2. 不同队列策略:");
+        log.info("LinkedBlockingQueue - 无界队列，适合生产快消费慢的场景");
+        log.info("ArrayBlockingQueue - 有界队列，防止内存溢出");
+        log.info("PriorityBlockingQueue - 优先级队列，按重要性爬取");
         
         // 演示监控和调优
-        System.out.println("\n3. 性能监控和调优:");
-        System.out.println("- 监控队列大小，调整生产者/消费者比例");
-        System.out.println("- 监控线程活跃度，调整线程池大小");
-        System.out.println("- 统计成功率，优化错误处理策略");
-        System.out.println("- 分析爬取延迟，优化网络请求");
+        log.info("\n3. 性能监控和调优:");
+        log.info("- 监控队列大小，调整生产者/消费者比例");
+        log.info("- 监控线程活跃度，调整线程池大小");
+        log.info("- 统计成功率，优化错误处理策略");
+        log.info("- 分析爬取延迟，优化网络请求");
         
-        System.out.println("\n4. 实际应用场景:");
-        System.out.println("- 搜索引擎数据收集");
-        System.out.println("- 价格监控和比价");
-        System.out.println("- 新闻聚合");
-        System.out.println("- 社交媒体分析");
-        System.out.println("- 学术研究数据收集");
+        log.info("\n4. 实际应用场景:");
+        log.info("- 搜索引擎数据收集");
+        log.info("- 价格监控和比价");
+        log.info("- 新闻聚合");
+        log.info("- 社交媒体分析");
+        log.info("- 学术研究数据收集");
     }
 }

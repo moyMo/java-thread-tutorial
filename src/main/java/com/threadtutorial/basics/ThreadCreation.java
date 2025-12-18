@@ -1,5 +1,7 @@
 package com.threadtutorial.basics;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * 线程创建方式示例
  * 演示三种创建线程的方式：
@@ -7,32 +9,33 @@ package com.threadtutorial.basics;
  * 2. 实现Runnable接口
  * 3. 使用Lambda表达式
  */
+@Slf4j
 public class ThreadCreation {
 
     public static void main(String[] args) {
-        System.out.println("=== Java线程创建方式示例 ===");
-        System.out.println("主线程名称: " + Thread.currentThread().getName());
+        log.info("=== Java线程创建方式示例 ===");
+        log.info("主线程名称: {}", Thread.currentThread().getName());
         
         // 方式1：继承Thread类
-        System.out.println("\n1. 继承Thread类创建线程:");
+        log.info("\n1. 继承Thread类创建线程:");
         MyThread thread1 = new MyThread("Thread-1");
         thread1.start();
         
         // 方式2：实现Runnable接口
-        System.out.println("\n2. 实现Runnable接口创建线程:");
+        log.info("\n2. 实现Runnable接口创建线程:");
         Thread thread2 = new Thread(new MyRunnable(), "Thread-2");
         thread2.start();
         
         // 方式3：使用Lambda表达式（Java 8+）
-        System.out.println("\n3. 使用Lambda表达式创建线程:");
+        log.info("\n3. 使用Lambda表达式创建线程:");
         Thread thread3 = new Thread(() -> {
-            System.out.println("线程 " + Thread.currentThread().getName() + " 正在运行 (Lambda)");
+            log.info("线程 {} 正在运行 (Lambda)", Thread.currentThread().getName());
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error("Lambda线程被中断", e);
             }
-            System.out.println("线程 " + Thread.currentThread().getName() + " 执行完成 (Lambda)");
+            log.info("线程 {} 执行完成 (Lambda)", Thread.currentThread().getName());
         }, "Thread-3");
         thread3.start();
         
@@ -42,15 +45,16 @@ public class ThreadCreation {
             thread2.join();
             thread3.join();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error("主线程被中断", e);
         }
         
-        System.out.println("\n所有线程执行完成！");
+        log.info("\n所有线程执行完成！");
     }
     
     /**
      * 方式1：通过继承Thread类创建线程
      */
+    @Slf4j
     static class MyThread extends Thread {
         public MyThread(String name) {
             super(name);
@@ -58,31 +62,32 @@ public class ThreadCreation {
         
         @Override
         public void run() {
-            System.out.println("线程 " + getName() + " 正在运行 (继承Thread类)");
+            log.info("线程 {} 正在运行 (继承Thread类)", getName());
             try {
                 // 模拟工作
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error("MyThread线程被中断", e);
             }
-            System.out.println("线程 " + getName() + " 执行完成 (继承Thread类)");
+            log.info("线程 {} 执行完成 (继承Thread类)", getName());
         }
     }
     
     /**
      * 方式2：通过实现Runnable接口创建线程
      */
+    @Slf4j
     static class MyRunnable implements Runnable {
         @Override
         public void run() {
-            System.out.println("线程 " + Thread.currentThread().getName() + " 正在运行 (实现Runnable接口)");
+            log.info("线程 {} 正在运行 (实现Runnable接口)", Thread.currentThread().getName());
             try {
                 // 模拟工作
                 Thread.sleep(800);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error("MyRunnable线程被中断", e);
             }
-            System.out.println("线程 " + Thread.currentThread().getName() + " 执行完成 (实现Runnable接口)");
+            log.info("线程 {} 执行完成 (实现Runnable接口)", Thread.currentThread().getName());
         }
     }
 }

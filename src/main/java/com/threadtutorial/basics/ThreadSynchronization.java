@@ -1,5 +1,7 @@
 package com.threadtutorial.basics;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -10,6 +12,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * 2. ReentrantLock锁
  * 3. 原子操作（简单示例）
  */
+@Slf4j
 public class ThreadSynchronization {
     
     private static int counter = 0;
@@ -17,8 +20,8 @@ public class ThreadSynchronization {
     private static final Lock reentrantLock = new ReentrantLock();
     
     public static void main(String[] args) throws InterruptedException {
-        System.out.println("=== 线程同步示例 ===");
-        System.out.println("初始计数器值: " + counter);
+        log.info("=== 线程同步示例 ===");
+        log.info("初始计数器值:  {}", counter);
         
         // 测试synchronized方式
         testSynchronized();
@@ -30,14 +33,14 @@ public class ThreadSynchronization {
         // 测试ReentrantLock方式
         testReentrantLock();
         
-        System.out.println("\n所有测试完成！");
+        log.info("\n所有测试完成！");
     }
     
     /**
      * 使用synchronized关键字进行同步
      */
     private static void testSynchronized() throws InterruptedException {
-        System.out.println("\n1. 使用synchronized关键字同步:");
+        log.info("\n1. 使用synchronized关键字同步:");
         
         // 创建10个线程，每个线程增加计数器1000次
         Thread[] threads = new Thread[10];
@@ -61,15 +64,15 @@ public class ThreadSynchronization {
             thread.join();
         }
         
-        System.out.println("预期值: 10000, 实际值: " + counter);
-        System.out.println("synchronized测试 " + (counter == 10000 ? "成功" : "失败"));
+        log.info("预期值: 10000, 实际值:  {}", counter);
+        log.info("synchronized测试  {}", (counter == 10000 ? "成功" : "失败"));
     }
     
     /**
      * 使用ReentrantLock进行同步
      */
     private static void testReentrantLock() throws InterruptedException {
-        System.out.println("\n2. 使用ReentrantLock同步:");
+        log.info("\n2. 使用ReentrantLock同步:");
         
         // 创建10个线程，每个线程增加计数器1000次
         Thread[] threads = new Thread[10];
@@ -96,8 +99,8 @@ public class ThreadSynchronization {
             thread.join();
         }
         
-        System.out.println("预期值: 10000, 实际值: " + counter);
-        System.out.println("ReentrantLock测试 " + (counter == 10000 ? "成功" : "失败"));
+        log.info("预期值: 10000, 实际值:  {}", counter);
+        log.info("ReentrantLock测试  {}", (counter == 10000 ? "成功" : "失败"));
     }
     
     /**
@@ -128,13 +131,13 @@ public class ThreadSynchronization {
                 acquired = lock.tryLock();
                 if (acquired) {
                     // 执行需要同步的操作
-                    System.out.println(Thread.currentThread().getName() + " 获取到锁，执行任务");
+                    log.info("{}  获取到锁，执行任务", Thread.currentThread().getName() );
                     Thread.sleep(500);
                 } else {
-                    System.out.println(Thread.currentThread().getName() + " 未能获取到锁，执行其他操作");
+                    log.info("{}  未能获取到锁，执行其他操作", Thread.currentThread().getName() );
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error("异常", e);
             } finally {
                 if (acquired) {
                     lock.unlock();

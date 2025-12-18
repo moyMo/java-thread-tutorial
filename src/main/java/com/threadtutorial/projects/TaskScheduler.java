@@ -1,5 +1,7 @@
 package com.threadtutorial.projects;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.concurrent.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -9,6 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * 多线程任务调度器示例
  * 演示定时任务、周期性任务和延迟任务的调度
  */
+@Slf4j
 public class TaskScheduler {
 
     // 任务调度器
@@ -30,7 +33,7 @@ public class TaskScheduler {
      */
     public TaskScheduler(int threadCount) {
         this.scheduler = Executors.newScheduledThreadPool(threadCount);
-        System.out.println("任务调度器初始化完成，线程数: " + threadCount);
+        log.info("任务调度器初始化完成，线程数:  {}", threadCount);
     }
     
     /**
@@ -93,7 +96,7 @@ public class TaskScheduler {
             }
         });
         
-        System.out.println("提交立即任务: " + taskName + " (ID: " + taskId + ")");
+        log.info("提交立即任务:  {}", taskName + " (ID: " + taskId + ")");
         return taskId;
     }
     
@@ -126,7 +129,7 @@ public class TaskScheduler {
         }, delay, unit);
         
         scheduledTasks.put(taskId, future);
-        System.out.println("提交延迟任务: " + taskName + " (ID: " + taskId + 
+        log.info("提交延迟任务:  {}", taskName + " (ID: " + taskId + 
                           ", 延迟: " + delay + " " + unit + ")");
         return taskId;
     }
@@ -167,7 +170,7 @@ public class TaskScheduler {
         }, initialDelay, period, unit);
         
         scheduledTasks.put(taskId, future);
-        System.out.println("提交固定频率任务: " + taskName + " (ID: " + taskId + 
+        log.info("提交固定频率任务:  {}", taskName + " (ID: " + taskId + 
                           ", 初始延迟: " + initialDelay + " " + unit + 
                           ", 周期: " + period + " " + unit + 
                           ", 最大执行次数: " + maxExecutions + ")");
@@ -210,7 +213,7 @@ public class TaskScheduler {
         }, initialDelay, delay, unit);
         
         scheduledTasks.put(taskId, future);
-        System.out.println("提交固定延迟任务: " + taskName + " (ID: " + taskId + 
+        log.info("提交固定延迟任务:  {}", taskName + " (ID: " + taskId + 
                           ", 初始延迟: " + initialDelay + " " + unit + 
                           ", 延迟: " + delay + " " + unit + 
                           ", 最大执行次数: " + maxExecutions + ")");
@@ -230,7 +233,7 @@ public class TaskScheduler {
                 if (info != null) {
                     info.isRunning = false;
                 }
-                System.out.println("任务已取消: " + taskId);
+                log.info("任务已取消:  {}", taskId);
             }
             return cancelled;
         }
@@ -243,18 +246,18 @@ public class TaskScheduler {
     public void printTaskStatus(String taskId) {
         TaskInfo info = taskInfoMap.get(taskId);
         if (info != null) {
-            System.out.println("\n=== 任务状态 ===");
-            System.out.println("任务ID: " + info.id);
-            System.out.println("任务名称: " + info.name);
-            System.out.println("任务类型: " + info.type);
-            System.out.println("是否运行中: " + info.isRunning);
-            System.out.println("执行次数: " + info.executionCount + "/" + info.maxExecutions);
-            System.out.println("开始时间: " + new Date(info.startTime));
+            log.info("\n=== 任务状态 ===");
+            log.info("任务ID:  {}", info.id);
+            log.info("任务名称:  {}", info.name);
+            log.info("任务类型:  {}", info.type);
+            log.info("是否运行中:  {}", info.isRunning);
+            log.info("执行次数:  {}", info.executionCount + "/" + info.maxExecutions);
+            log.info("开始时间:  {}", new Date(info.startTime));
             if (info.nextExecutionTime > 0) {
-                System.out.println("下次执行时间: " + new Date(info.nextExecutionTime));
+                log.info("下次执行时间:  {}", new Date(info.nextExecutionTime));
             }
         } else {
-            System.out.println("任务不存在: " + taskId);
+            log.info("任务不存在:  {}", taskId);
         }
     }
     
@@ -262,19 +265,18 @@ public class TaskScheduler {
      * 打印调度器统计信息
      */
     public void printStatistics() {
-        System.out.println("\n=== 调度器统计信息 ===");
-        System.out.println("总任务数: " + totalTasks.get());
-        System.out.println("已完成任务: " + completedTasks.get());
-        System.out.println("失败任务: " + failedTasks.get());
-        System.out.println("运行中任务: " + runningTasks.get());
-        System.out.println("计划中任务: " + scheduledTasks.size());
-        System.out.println("成功率: " + 
-            (totalTasks.get() > 0 ? 
+        log.info("\n=== 调度器统计信息 ===");
+        log.info("总任务数:  {}", totalTasks.get());
+        log.info("已完成任务:  {}", completedTasks.get());
+        log.info("失败任务:  {}", failedTasks.get());
+        log.info("运行中任务:  {}", runningTasks.get());
+        log.info("计划中任务:  {}", scheduledTasks.size());
+        log.info("成功率:  {}", (totalTasks.get() > 0 ? 
              (completedTasks.get() * 100.0 / totalTasks.get()) : 0) + "%");
         
-        System.out.println("\n=== 计划任务列表 ===");
+        log.info("\n=== 计划任务列表 ===");
         for (TaskInfo info : taskInfoMap.values()) {
-            System.out.println("ID: " + info.id + 
+            log.info("ID:  {}", info.id + 
                              ", 名称: " + info.name + 
                              ", 类型: " + info.type + 
                              ", 执行次数: " + info.executionCount);
@@ -285,7 +287,7 @@ public class TaskScheduler {
      * 关闭调度器
      */
     public void shutdown() {
-        System.out.println("正在关闭任务调度器...");
+        log.info("正在关闭任务调度器...");
         scheduler.shutdown();
         try {
             if (!scheduler.awaitTermination(10, TimeUnit.SECONDS)) {
@@ -295,7 +297,7 @@ public class TaskScheduler {
             scheduler.shutdownNow();
             Thread.currentThread().interrupt();
         }
-        System.out.println("任务调度器已关闭");
+        log.info("任务调度器已关闭");
     }
     
     /**
@@ -319,14 +321,14 @@ public class TaskScheduler {
         
         @Override
         public void run() {
-            System.out.println("[" + new Date() + "] 任务开始: " + name);
+            log.info("[ {}", new Date() + "] 任务开始: " + name);
             try {
                 // 模拟任务执行
                 Thread.sleep(duration);
-                System.out.println("[" + new Date() + "] 任务完成: " + name);
+                log.info("[ {}", new Date() + "] 任务完成: " + name);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                System.out.println("[" + new Date() + "] 任务中断: " + name);
+                log.info("[ {}", new Date() + "] 任务中断: " + name);
             }
         }
     }
@@ -335,26 +337,26 @@ public class TaskScheduler {
      * 主方法 - 演示使用
      */
     public static void main(String[] args) throws InterruptedException {
-        System.out.println("=== 多线程任务调度器示例 ===");
+        log.info("=== 多线程任务调度器示例 ===");
         
         // 创建调度器
         TaskScheduler scheduler = new TaskScheduler(4);
         
         // 演示各种任务类型
-        System.out.println("\n1. 提交立即执行任务:");
+        log.info("\n1. 提交立即执行任务:");
         String immediateTaskId = scheduler.submitImmediateTask(
             "数据清理任务", new ExampleTask("数据清理", 500));
         
-        System.out.println("\n2. 提交延迟执行任务:");
+        log.info("\n2. 提交延迟执行任务:");
         String delayedTaskId = scheduler.submitDelayedTask(
             "报表生成任务", new ExampleTask("报表生成", 800), 2, TimeUnit.SECONDS);
         
-        System.out.println("\n3. 提交固定频率任务:");
+        log.info("\n3. 提交固定频率任务:");
         String fixedRateTaskId = scheduler.submitFixedRateTask(
             "心跳检测任务", new ExampleTask("心跳检测", 300), 
             1, 3, TimeUnit.SECONDS, 3);
         
-        System.out.println("\n4. 提交固定延迟任务:");
+        log.info("\n4. 提交固定延迟任务:");
         String fixedDelayTaskId = scheduler.submitFixedDelayTask(
             "数据同步任务", new ExampleTask("数据同步", 600), 
             2, 5, TimeUnit.SECONDS, 2);
@@ -363,11 +365,11 @@ public class TaskScheduler {
         Thread.sleep(5000);
         
         // 查看任务状态
-        System.out.println("\n5. 查看任务状态:");
+        log.info("\n5. 查看任务状态:");
         scheduler.printTaskStatus(fixedRateTaskId);
         
         // 取消一个任务
-        System.out.println("\n6. 取消任务:");
+        log.info("\n6. 取消任务:");
         scheduler.cancelTask(delayedTaskId);
         
         // 等待更多时间
@@ -379,52 +381,52 @@ public class TaskScheduler {
         // 关闭调度器
         scheduler.shutdown();
         
-        System.out.println("\n=== 调度器技术要点 ===");
-        System.out.println("1. ScheduledExecutorService: Java内置的定时任务调度器");
-        System.out.println("2. 任务类型: 立即、延迟、固定频率、固定延迟");
-        System.out.println("3. 线程池管理: 控制并发任务数量");
-        System.out.println("4. 任务监控: 跟踪任务状态和执行统计");
-        System.out.println("5. 错误处理: 捕获任务执行异常");
-        System.out.println("6. 资源管理: 合理关闭调度器");
+        log.info("\n=== 调度器技术要点 ===");
+        log.info("1. ScheduledExecutorService: Java内置的定时任务调度器");
+        log.info("2. 任务类型: 立即、延迟、固定频率、固定延迟");
+        log.info("3. 线程池管理: 控制并发任务数量");
+        log.info("4. 任务监控: 跟踪任务状态和执行统计");
+        log.info("5. 错误处理: 捕获任务执行异常");
+        log.info("6. 资源管理: 合理关闭调度器");
         
-        System.out.println("\n=== 实际应用场景 ===");
-        System.out.println("- 定时数据备份和清理");
-        System.out.println("- 系统监控和报警");
-        System.out.println("- 缓存刷新和数据同步");
-        System.out.println("- 报表生成和邮件发送");
-        System.out.println("- 心跳检测和连接保持");
+        log.info("\n=== 实际应用场景 ===");
+        log.info("- 定时数据备份和清理");
+        log.info("- 系统监控和报警");
+        log.info("- 缓存刷新和数据同步");
+        log.info("- 报表生成和邮件发送");
+        log.info("- 心跳检测和连接保持");
     }
     
     /**
      * 高级特性演示
      */
     public static void advancedDemo() {
-        System.out.println("\n=== 高级特性演示 ===");
+        log.info("\n=== 高级特性演示 ===");
         
-        System.out.println("1. 动态调整任务:");
-        System.out.println("   - 根据系统负载动态调整任务执行频率");
-        System.out.println("   - 根据任务优先级调整执行顺序");
-        System.out.println("   - 实现任务依赖关系调度");
+        log.info("1. 动态调整任务:");
+        log.info("   - 根据系统负载动态调整任务执行频率");
+        log.info("   - 根据任务优先级调整执行顺序");
+        log.info("   - 实现任务依赖关系调度");
         
-        System.out.println("\n2. 分布式任务调度:");
-        System.out.println("   - 使用分布式锁保证任务唯一性");
-        System.out.println("   - 实现任务分片和并行处理");
-        System.out.println("   - 支持故障转移和负载均衡");
+        log.info("\n2. 分布式任务调度:");
+        log.info("   - 使用分布式锁保证任务唯一性");
+        log.info("   - 实现任务分片和并行处理");
+        log.info("   - 支持故障转移和负载均衡");
         
-        System.out.println("\n3. 任务持久化:");
-        System.out.println("   - 将任务信息保存到数据库");
-        System.out.println("   - 支持系统重启后任务恢复");
-        System.out.println("   - 实现任务历史记录和审计");
+        log.info("\n3. 任务持久化:");
+        log.info("   - 将任务信息保存到数据库");
+        log.info("   - 支持系统重启后任务恢复");
+        log.info("   - 实现任务历史记录和审计");
         
-        System.out.println("\n4. 监控和告警:");
-        System.out.println("   - 实时监控任务执行状态");
-        System.out.println("   - 设置任务执行超时告警");
-        System.out.println("   - 实现任务执行失败重试机制");
+        log.info("\n4. 监控和告警:");
+        log.info("   - 实时监控任务执行状态");
+        log.info("   - 设置任务执行超时告警");
+        log.info("   - 实现任务执行失败重试机制");
         
-        System.out.println("\n5. 性能优化:");
-        System.out.println("   - 使用合适的线程池大小");
-        System.out.println("   - 避免任务执行时间过长");
-        System.out.println("   - 合理设置任务执行频率");
-        System.out.println("   - 使用异步非阻塞任务");
+        log.info("\n5. 性能优化:");
+        log.info("   - 使用合适的线程池大小");
+        log.info("   - 避免任务执行时间过长");
+        log.info("   - 合理设置任务执行频率");
+        log.info("   - 使用异步非阻塞任务");
     }
 }

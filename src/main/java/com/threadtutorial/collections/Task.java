@@ -1,9 +1,12 @@
 package com.threadtutorial.collections;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * 任务类（用于PriorityBlockingQueue）
  * 实现Comparable接口以支持优先级排序
  */
+@Slf4j
 public class Task implements Comparable<Task> {
     private final String name;
     private final int priority; // 优先级，数字越小优先级越高

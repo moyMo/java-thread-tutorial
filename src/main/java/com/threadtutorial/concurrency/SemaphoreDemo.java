@@ -1,5 +1,7 @@
 package com.threadtutorial.concurrency;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -8,28 +10,29 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Semaphore（信号量）示例
  * 演示如何使用Semaphore控制并发访问资源的线程数量
  */
+@Slf4j
 public class SemaphoreDemo {
     
     public static void main(String[] args) throws InterruptedException {
-        System.out.println("=== Semaphore（信号量）示例 ===");
+        log.info("=== Semaphore（信号量）示例 ===");
         
         // 示例1：控制资源访问数量
-        System.out.println("\n1. 控制资源访问数量（如数据库连接池）:");
+        log.info("\n1. 控制资源访问数量（如数据库连接池）:");
         testResourcePool();
         
         // 示例2：生产者-消费者模式
-        System.out.println("\n2. 生产者-消费者模式:");
+        log.info("\n2. 生产者-消费者模式:");
         testProducerConsumer();
         
         // 示例3：限流控制
-        System.out.println("\n3. 限流控制（API调用限制）:");
+        log.info("\n3. 限流控制（API调用限制）:");
         testRateLimiting();
         
         // 示例4：公平与非公平信号量
-        System.out.println("\n4. 公平与非公平信号量对比:");
+        log.info("\n4. 公平与非公平信号量对比:");
         testFairVsNonFair();
         
-        System.out.println("\n所有示例执行完成！");
+        log.info("\n所有示例执行完成！");
     }
     
     /**
@@ -43,8 +46,8 @@ public class SemaphoreDemo {
         Semaphore connectionPool = new Semaphore(poolSize);
         AtomicInteger activeConnections = new AtomicInteger(0);
         
-        System.out.println("数据库连接池大小: " + poolSize);
-        System.out.println("模拟 " + threadCount + " 个线程请求连接");
+        log.info("数据库连接池大小:  {}", poolSize);
+        log.info("模拟  {}", threadCount + " 个线程请求连接");
         
         // 创建多个线程尝试获取数据库连接
         Thread[] threads = new Thread[threadCount];
@@ -52,13 +55,13 @@ public class SemaphoreDemo {
             final int threadId = i;
             threads[i-1] = new Thread(() -> {
                 try {
-                    System.out.println("线程 " + threadId + " 尝试获取数据库连接...");
+                    log.info("线程  {}", threadId + " 尝试获取数据库连接...");
                     
                     // 获取许可（连接）
                     connectionPool.acquire();
                     int currentActive = activeConnections.incrementAndGet();
                     
-                    System.out.println("线程 " + threadId + " 获取到连接，当前活跃连接: " + currentActive);
+                    log.info("线程  {}", threadId + " 获取到连接，当前活跃连接: " + currentActive);
                     
                     // 模拟数据库操作
                     Thread.sleep(1000 + (long) (Math.random() * 2000));
@@ -67,10 +70,10 @@ public class SemaphoreDemo {
                     connectionPool.release();
                     currentActive = activeConnections.decrementAndGet();
                     
-                    System.out.println("线程 " + threadId + " 释放连接，当前活跃连接: " + currentActive);
+                    log.info("线程  {}", threadId + " 释放连接，当前活跃连接: " + currentActive);
                     
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    log.error("异常", e);
                 }
             }, "DB-Thread-" + i);
         }
@@ -85,7 +88,7 @@ public class SemaphoreDemo {
             thread.join();
         }
         
-        System.out.println("所有数据库操作完成");
+        log.info("所有数据库操作完成");
     }
     
     /**
@@ -106,8 +109,8 @@ public class SemaphoreDemo {
         AtomicInteger producedCount = new AtomicInteger(0);
         AtomicInteger consumedCount = new AtomicInteger(0);
         
-        System.out.println("生产者-消费者模式演示");
-        System.out.println("缓冲区大小: " + bufferSize + ", 总生产项目: " + itemCount);
+        log.info("生产者-消费者模式演示");
+        log.info("缓冲区大小:  {}", bufferSize + ", 总生产项目: " + itemCount);
         
         // 生产者线程
         Thread producer = new Thread(() -> {
@@ -124,7 +127,7 @@ public class SemaphoreDemo {
                     buffer[index] = i;
                     int produced = producedCount.incrementAndGet();
                     
-                    System.out.println("生产者: 生产项目 " + i + " 到缓冲区位置 " + index + 
+                    log.info("生产者: 生产项目  {}", i + " 到缓冲区位置 " + index + 
                                      " (已生产: " + produced + ")");
                     
                     // 释放互斥锁
@@ -137,10 +140,10 @@ public class SemaphoreDemo {
                     Thread.sleep((long) (Math.random() * 300));
                     
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    log.error("异常", e);
                 }
             }
-            System.out.println("生产者完成所有生产任务");
+            log.info("生产者完成所有生产任务");
         }, "Producer");
         
         // 消费者线程
@@ -159,7 +162,7 @@ public class SemaphoreDemo {
                     int item = buffer[index];
                     int consumed = consumedCount.incrementAndGet();
                     
-                    System.out.println("消费者: 消费项目 " + item + " 从缓冲区位置 " + index + 
+                    log.info("消费者: 消费项目  {}", item + " 从缓冲区位置 " + index + 
                                      " (已消费: " + consumed + ")");
                     
                     // 释放互斥锁
@@ -172,10 +175,10 @@ public class SemaphoreDemo {
                     Thread.sleep((long) (Math.random() * 500));
                     
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    log.error("异常", e);
                 }
             }
-            System.out.println("消费者完成所有消费任务");
+            log.info("消费者完成所有消费任务");
         }, "Consumer");
         
         // 启动生产者和消费者
@@ -186,8 +189,8 @@ public class SemaphoreDemo {
         producer.join();
         consumer.join();
         
-        System.out.println("生产者-消费者模式演示完成");
-        System.out.println("总计生产: " + producedCount.get() + ", 总计消费: " + consumedCount.get());
+        log.info("生产者-消费者模式演示完成");
+        log.info("总计生产:  {}", producedCount.get() + ", 总计消费: " + consumedCount.get());
     }
     
     /**
@@ -202,9 +205,9 @@ public class SemaphoreDemo {
         AtomicInteger successfulRequests = new AtomicInteger(0);
         AtomicInteger failedRequests = new AtomicInteger(0);
         
-        System.out.println("API限流控制演示");
-        System.out.println("限流: " + maxRequestsPerSecond + " 请求/秒");
-        System.out.println("模拟 " + totalRequests + " 个并发请求");
+        log.info("API限流控制演示");
+        log.info("限流:  {}", maxRequestsPerSecond + " 请求/秒");
+        log.info("模拟  {}", totalRequests + " 个并发请求");
         
         // 创建多个请求线程
         Thread[] requestThreads = new Thread[totalRequests];
@@ -212,14 +215,14 @@ public class SemaphoreDemo {
             final int requestId = i;
             requestThreads[i-1] = new Thread(() -> {
                 try {
-                    System.out.println("请求 " + requestId + ": 尝试调用API...");
+                    log.info("请求  {}", requestId + ": 尝试调用API...");
                     
                     // 尝试获取许可，最多等待500毫秒
                     boolean acquired = rateLimiter.tryAcquire(500, TimeUnit.MILLISECONDS);
                     
                     if (acquired) {
                         // 模拟API调用
-                        System.out.println("请求 " + requestId + ": API调用成功");
+                        log.info("请求  {}", requestId + ": API调用成功");
                         Thread.sleep(200); // 模拟API处理时间
                         
                         // 释放许可（模拟限流窗口滑动）
@@ -229,12 +232,12 @@ public class SemaphoreDemo {
                         
                         successfulRequests.incrementAndGet();
                     } else {
-                        System.out.println("请求 " + requestId + ": API调用被限流（超时）");
+                        log.info("请求  {}", requestId + ": API调用被限流（超时）");
                         failedRequests.incrementAndGet();
                     }
                     
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    log.error("异常", e);
                 }
             }, "API-Request-" + i);
         }
@@ -251,11 +254,10 @@ public class SemaphoreDemo {
             thread.join();
         }
         
-        System.out.println("\n限流结果统计:");
-        System.out.println("成功请求: " + successfulRequests.get());
-        System.out.println("失败请求（被限流）: " + failedRequests.get());
-        System.out.println("成功率: " + 
-            String.format("%.1f%%", (successfulRequests.get() * 100.0 / totalRequests)));
+        log.info("\n限流结果统计:");
+        log.info("成功请求:  {}", successfulRequests.get());
+        log.info("失败请求（被限流）:  {}", failedRequests.get());
+        log.info("成功率:  {}", String.format("%.1f%%", (successfulRequests.get() * 100.0 / totalRequests)));
     }
     
     /**
@@ -265,22 +267,22 @@ public class SemaphoreDemo {
         final int threadCount = 5;
         final int acquireAttempts = 3;
         
-        System.out.println("公平与非公平信号量对比演示");
-        System.out.println("线程数: " + threadCount + ", 每个线程尝试获取许可 " + acquireAttempts + " 次");
+        log.info("公平与非公平信号量对比演示");
+        log.info("线程数:  {}", threadCount + ", 每个线程尝试获取许可 " + acquireAttempts + " 次");
         
         // 测试非公平信号量
-        System.out.println("\nA. 非公平信号量:");
+        log.info("\nA. 非公平信号量:");
         testSemaphore(false, threadCount, acquireAttempts);
         
         Thread.sleep(2000); // 间隔一下
         
         // 测试公平信号量
-        System.out.println("\nB. 公平信号量:");
+        log.info("\nB. 公平信号量:");
         testSemaphore(true, threadCount, acquireAttempts);
         
-        System.out.println("\n对比总结:");
-        System.out.println("- 非公平信号量: 性能更高，但可能导致线程饥饿");
-        System.out.println("- 公平信号量: 保证先请求的线程先获取许可，性能稍低但更公平");
+        log.info("\n对比总结:");
+        log.info("- 非公平信号量: 性能更高，但可能导致线程饥饿");
+        log.info("- 公平信号量: 保证先请求的线程先获取许可，性能稍低但更公平");
     }
     
     /**
@@ -292,7 +294,7 @@ public class SemaphoreDemo {
         Semaphore semaphore = new Semaphore(1, fair);
         String semaphoreType = fair ? "公平" : "非公平";
         
-        System.out.println("使用" + semaphoreType + "信号量，初始许可: 1");
+        log.info("使用 {}", semaphoreType + "信号量，初始许可: 1");
         
         // 创建线程并记录获取顺序
         Thread[] threads = new Thread[threadCount];
@@ -311,7 +313,7 @@ public class SemaphoreDemo {
                         int order = orderIndex.incrementAndGet();
                         acquisitionOrder[threadId] = order;
                         
-                        System.out.println("线程 " + threadId + " 第" + attempt + "次获取到许可" +
+                        log.info("线程  {}", threadId + " 第" + attempt + "次获取到许可" +
                                          " (总顺序: " + order + ")");
                         
                         // 持有许可一段时间
@@ -324,7 +326,7 @@ public class SemaphoreDemo {
                         Thread.sleep(50);
                         
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        log.error("异常", e);
                     }
                 }
             }, semaphoreType + "-Thread-" + i);
@@ -341,7 +343,7 @@ public class SemaphoreDemo {
         }
         
         // 分析获取模式
-        System.out.println("\n" + semaphoreType + "信号量获取模式分析:");
+        log.info("\n {}", semaphoreType + "信号量获取模式分析:");
         boolean isFairPattern = true;
         for (int i = 0; i < threadCount; i++) {
             if (acquisitionOrder[i] != i + 1) {
@@ -351,9 +353,9 @@ public class SemaphoreDemo {
         }
         
         if (fair) {
-            System.out.println("公平信号量" + (isFairPattern ? "按请求顺序分配许可" : "未完全按顺序分配"));
+            log.info("公平信号量 {}", (isFairPattern ? "按请求顺序分配许可" : "未完全按顺序分配"));
         } else {
-            System.out.println("非公平信号量" + (isFairPattern ? "意外按顺序分配" : "未按顺序分配"));
+            log.info("非公平信号量 {}", (isFairPattern ? "意外按顺序分配" : "未按顺序分配"));
         }
     }
     
@@ -388,7 +390,7 @@ public class SemaphoreDemo {
             for (int i = 0; i < maxConnections; i++) {
                 if (!connectionInUse[i]) {
                     connectionInUse[i] = true;
-                    System.out.println("分配连接 " + i + "，剩余可用连接: " + availableConnections.availablePermits());
+                    log.info("分配连接  {}", i + "，剩余可用连接: " + availableConnections.availablePermits());
                     return i;
                 }
             }
@@ -400,7 +402,7 @@ public class SemaphoreDemo {
             if (connectionId >= 0 && connectionId < maxConnections && connectionInUse[connectionId]) {
                 connectionInUse[connectionId] = false;
                 availableConnections.release();
-                System.out.println("释放连接 " + connectionId + "，剩余可用连接: " + (availableConnections.availablePermits() + 1));
+                log.info("释放连接  {}", connectionId + "，剩余可用连接: " + (availableConnections.availablePermits() + 1));
             }
         }
         

@@ -1,5 +1,7 @@
 package com.threadtutorial.collections;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 
@@ -7,6 +9,7 @@ import java.util.concurrent.TimeUnit;
  * 延迟任务类（用于DelayQueue）
  * 实现Delayed接口以支持延迟执行
  */
+@Slf4j
 public class DelayedTask implements Delayed {
     private final String name;
     private final long expiryTime; // 到期时间（毫秒）

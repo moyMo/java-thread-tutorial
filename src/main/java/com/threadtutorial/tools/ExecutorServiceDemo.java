@@ -1,5 +1,7 @@
 package com.threadtutorial.tools;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -7,28 +9,29 @@ import java.util.concurrent.atomic.AtomicInteger;
  * ExecutorService示例
  * 演示Java线程池的使用
  */
+@Slf4j
 public class ExecutorServiceDemo {
     
     public static void main(String[] args) {
-        System.out.println("=== ExecutorService线程池示例 ===");
+        log.info("=== ExecutorService线程池示例 ===");
         
         // 示例1：固定大小线程池
-        System.out.println("\n1. 固定大小线程池 (FixedThreadPool):");
+        log.info("\n1. 固定大小线程池 (FixedThreadPool):");
         testFixedThreadPool();
         
         // 示例2：缓存线程池
-        System.out.println("\n2. 缓存线程池 (CachedThreadPool):");
+        log.info("\n2. 缓存线程池 (CachedThreadPool):");
         testCachedThreadPool();
         
         // 示例3：定时线程池
-        System.out.println("\n3. 定时线程池 (ScheduledThreadPool):");
+        log.info("\n3. 定时线程池 (ScheduledThreadPool):");
         testScheduledThreadPool();
         
         // 示例4：自定义线程池
-        System.out.println("\n4. 自定义线程池 (ThreadPoolExecutor):");
+        log.info("\n4. 自定义线程池 (ThreadPoolExecutor):");
         testCustomThreadPool();
         
-        System.out.println("\n所有示例执行完成！");
+        log.info("\n所有示例执行完成！");
     }
     
     /**
@@ -42,13 +45,13 @@ public class ExecutorServiceDemo {
         for (int i = 1; i <= 10; i++) {
             final int taskId = i;
             executor.submit(() -> {
-                System.out.println("任务 " + taskId + " 正在执行，线程: " + Thread.currentThread().getName());
+                log.info("任务  {}", taskId + " 正在执行，线程: " + Thread.currentThread().getName());
                 try {
                     Thread.sleep(500); // 模拟任务执行
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    log.error("异常", e);
                 }
-                System.out.println("任务 " + taskId + " 执行完成");
+                log.info("任务  {}", taskId + " 执行完成");
             });
         }
         
@@ -57,7 +60,7 @@ public class ExecutorServiceDemo {
         try {
             // 等待所有任务完成，最多等待5秒
             if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
-                System.out.println("部分任务未在5秒内完成，强制关闭");
+                log.info("部分任务未在5秒内完成，强制关闭");
                 executor.shutdownNow();
             }
         } catch (InterruptedException e) {
@@ -79,15 +82,15 @@ public class ExecutorServiceDemo {
         for (int i = 1; i <= 20; i++) {
             final int taskId = i;
             executor.submit(() -> {
-                System.out.println("缓存池任务 " + taskId + " 开始，线程: " + Thread.currentThread().getName());
+                log.info("缓存池任务  {}", taskId + " 开始，线程: " + Thread.currentThread().getName());
                 try {
                     // 模拟不同执行时间
                     Thread.sleep(taskId * 100);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    log.error("异常", e);
                 }
                 completedTasks.incrementAndGet();
-                System.out.println("缓存池任务 " + taskId + " 完成，已完成: " + completedTasks.get());
+                log.info("缓存池任务  {}", taskId + " 完成，已完成: " + completedTasks.get());
             });
         }
         
@@ -107,35 +110,35 @@ public class ExecutorServiceDemo {
         // 创建定时线程池
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
         
-        System.out.println("开始定时任务演示...");
+        log.info("开始定时任务演示...");
         
         // 1. 延迟执行
         scheduler.schedule(() -> {
-            System.out.println("延迟5秒执行的任务");
+            log.info("延迟5秒执行的任务");
         }, 5, TimeUnit.SECONDS);
         
         // 2. 固定频率执行
         ScheduledFuture<?> periodicTask = scheduler.scheduleAtFixedRate(() -> {
-            System.out.println("固定频率任务执行，时间: " + System.currentTimeMillis());
+            log.info("固定频率任务执行，时间:  {}", System.currentTimeMillis());
         }, 1, 2, TimeUnit.SECONDS);
         
         // 3. 固定延迟执行
         scheduler.scheduleWithFixedDelay(() -> {
-            System.out.println("固定延迟任务开始");
+            log.info("固定延迟任务开始");
             try {
                 Thread.sleep(1000); // 模拟任务执行
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error("异常", e);
             }
-            System.out.println("固定延迟任务结束");
+            log.info("固定延迟任务结束");
         }, 2, 3, TimeUnit.SECONDS);
         
         // 10秒后取消固定频率任务并关闭调度器
         scheduler.schedule(() -> {
-            System.out.println("取消固定频率任务");
+            log.info("取消固定频率任务");
             periodicTask.cancel(false);
             
-            System.out.println("关闭调度器");
+            log.info("关闭调度器");
             scheduler.shutdown();
             try {
                 if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
@@ -178,33 +181,33 @@ public class ExecutorServiceDemo {
             new ThreadPoolExecutor.CallerRunsPolicy() // 拒绝策略：由调用线程执行
         );
         
-        System.out.println("自定义线程池状态:");
-        System.out.println("核心线程数: " + corePoolSize);
-        System.out.println("最大线程数: " + maxPoolSize);
-        System.out.println("队列容量: " + queueCapacity);
+        log.info("自定义线程池状态:");
+        log.info("核心线程数:  {}", corePoolSize);
+        log.info("最大线程数:  {}", maxPoolSize);
+        log.info("队列容量:  {}", queueCapacity);
         
         // 提交15个任务（超过队列容量，会触发拒绝策略）
         for (int i = 1; i <= 15; i++) {
             final int taskId = i;
             try {
                 executor.submit(() -> {
-                    System.out.println("自定义任务 " + taskId + " 执行，线程: " + Thread.currentThread().getName());
+                    log.info("自定义任务  {}", taskId + " 执行，线程: " + Thread.currentThread().getName());
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        log.error("异常", e);
                     }
                 });
-                System.out.println("任务 " + taskId + " 已提交");
+                log.info("任务  {}", taskId + " 已提交");
             } catch (Exception e) {
-                System.out.println("任务 " + taskId + " 提交失败: " + e.getMessage());
+                log.info("任务  {}", taskId + " 提交失败: " + e.getMessage());
             }
         }
         
         // 监控线程池状态
         ScheduledExecutorService monitor = Executors.newSingleThreadScheduledExecutor();
         monitor.scheduleAtFixedRate(() -> {
-            System.out.println("线程池状态 - 活跃线程: " + executor.getActiveCount() + 
+            log.info("线程池状态 - 活跃线程:  {}", executor.getActiveCount() + 
                              ", 队列大小: " + executor.getQueue().size() +
                              ", 完成任务: " + executor.getCompletedTaskCount());
         }, 0, 1, TimeUnit.SECONDS);
